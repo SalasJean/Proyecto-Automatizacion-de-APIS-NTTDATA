@@ -6,9 +6,7 @@ import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.actors.OnStage;
 import net.serenitybdd.screenplay.actors.OnlineCast;
 
-/**
- * Define los parametros personalizados de Cucumber y la configuracion del escenario.
- */
+//aqui preparamos el escenario recuerdaloo
 public class ParameterDefinition {
 
     @Before
@@ -16,7 +14,7 @@ public class ParameterDefinition {
         OnStage.setTheStage(new OnlineCast());
     }
 
-    @ParameterType(".+")
+    @ParameterType("el actor|[A-Za-z]+")
     public Actor actor(String actorName) {
         return OnStage.theActorCalled(actorName);
     }

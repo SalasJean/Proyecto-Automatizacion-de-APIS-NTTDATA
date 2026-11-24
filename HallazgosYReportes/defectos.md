@@ -1,11 +1,12 @@
 # Defectos detectados — Petstore API (recurso `pet`)
 
-Hallazgos encontrados al comparar el contrato de Swagger (https://petstore.swagger.io/v2/swagger.json) con el comportamiento real de la API, usando Postman.
+Hallazgos encontrados al comparar el contrato de Swagger (https://petstore.swagger.io/v2/swagger.json) con el comportamiento real de la API, usando Postman y curl.
 
-| ID | Título | Severidad propuesta | Estado |
+| ID | Título | Severidad  | Estado |
 |---|---|---|---|
 | DEF-001 | `GET /pet/{petId}` con id no numérico responde 404 en lugar de 400 | Media | Abierto |
 | DEF-002 | La API expone mensajes de excepción internos de Java al cliente | Baja | Abierto |
+| DEF-003 | `PUT /pet` con `photoUrls` como texto responde 500 en lugar de 405 | Media | Abierto |
 
 ---
 
@@ -14,7 +15,7 @@ Hallazgos encontrados al comparar el contrato de Swagger (https://petstore.swagg
 - **Endpoint:** `GET /pet/{petId}`
 - **Fecha de detección:** 2026-11-23
 - **Herramienta / entorno:** Postman, API pública `https://petstore.swagger.io/v2`
-- **Reportado por:** (tu nombre)
+- **Reportado por:** jean salas yupanqui
 
 **Pasos para reproducir:**
 1. Abrir Postman y crear una petición `GET`.
@@ -64,7 +65,7 @@ Pendiente (escenario "Consultar una mascota con id inválido", esperando 400, ma
 - **Endpoint:** `GET /pet/{petId}`
 - **Fecha de detección:** 2026-11-23
 - **Herramienta / entorno:** Postman, API pública `https://petstore.swagger.io/v2`
-- **Reportado por:** (tu nombre)
+- **Reportado por:** Jean Salas YUpanqui
 
 **Pasos para reproducir:**
 1. Abrir Postman y crear una petición `GET`.
@@ -95,3 +96,66 @@ Revela al cliente que el backend está hecho en Java y cómo procesa el parámet
 
 **Evidencia:**
 ![DEF-002.png](imagenes/DEF-002.png)
+
+---
+
+## DEF-003: `PUT /pet` con `photoUrls` como texto responde 500 en lugar de 405
+
+- **Endpoint:** `PUT /pet`
+- **Fecha de detección:** 2026-11-24
+- **Herramienta / entorno:** Postman / curl, API pública `https://petstore.swagger.io/v2`
+- **Reportado por:** Jean Salas Yupanqui
+
+**Pasos para reproducir:**
+1. Crear una petición `PUT` a `https://petstore.swagger.io/v2/pet`.
+2. Headers: `Content-Type: application/json` y `Accept: application/json`.
+3. Enviar en el body una mascota con `photoUrls` como texto simple en vez de un array:
+   ```json
+   {
+    "id": 987654321,
+    "category":
+    {
+    "id": 1,
+    "name": "gatos"
+    },
+    "name": "martin",
+    "photoUrls":
+    "abc",
+    "tags":
+    [ {
+    "id": 1,
+    "name": "amigable"
+    } ],
+    "status": "available"
+    }
+   ```
+4. Enviar la petición.
+
+**Resultado esperado:**
+Código **405** ("Validation exception"), según lo documentado en el contrato de Swagger para entradas no válidas.
+
+**Resultado obtenido:**
+Código **500 Server Error** con el siguiente body:
+
+```json
+{
+    "code": 500,
+    "type": "unknown",
+    "message": "something bad happened"
+}
+```
+
+**Referencia (contrato):**
+Documentación Swagger v2, endpoint `PUT /pet`, respuesta `405 – Validation exception`.
+
+**Impacto:**
+El servidor arroja un error interno no controlado (500) en lugar de validar el tipo de dato y devolver un código 405 indicando qué campo es incorrecto. Esto afecta la confiabilidad del servicio y oculta la causa real al consumidor de la API.
+
+**Severidad propuesta:** Media.
+
+**Evidencia:**
+![DEF-003.png](imagenes/DEF-003.png)
+**Prueba automatizada relacionada:**
+Automatizada de nuestro del caos de prueba 8 `APIPet.feature`, escenario 
+
+CP08: *Actualizar una mascota con photoUrls en formato invalido*, etiquetada con `@DefectoConocido` porque no esta documentado en el contrado de la api mi King :).

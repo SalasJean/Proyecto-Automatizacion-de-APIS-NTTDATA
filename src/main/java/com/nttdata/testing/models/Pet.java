@@ -1,65 +1,47 @@
 package com.nttdata.testing.models;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
 import java.util.Collections;
 import java.util.List;
 
-/**
- * Modelo de datos para representar una Mascota (Pet).
- * Centraliza la estructura y construccion del body JSON para evitar duplicacion de codigo.
- */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class Pet {
     private Long id;
+    private Category category;
     private String name;
     private List<String> photoUrls;
+    private List<Tag> tags;
     private String status;
 
     public Pet() {
     }
-
-    public Pet(Long id, String name, String status) {
-        this.id = id;
-        this.name = name;
-        this.status = status;
-        this.photoUrls = Collections.singletonList("https://example.com/mascota.png");
-    }
-
     public static Pet from(String id, String name, String status) {
-        Long petId = null;
+        Pet pet = new Pet();
         if (id != null && !id.trim().isEmpty()) {
-            petId = Long.parseLong(id.trim());
+            pet.setId(Long.parseLong(id.trim()));
         }
-        return new Pet(petId, name, status);
+        pet.setName(name);
+        pet.setStatus(status);
+        pet.setPhotoUrls(Collections.singletonList("https://example.com/manchas.png"));
+        return pet;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Long getId() { return id; }
+    public void setId(Long id) { this.id = id; }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public Category getCategory() { return category; }
+    public void setCategory(Category category) { this.category = category; }
 
-    public String getName() {
-        return name;
-    }
+    public String getName() { return name; }
+    public void setName(String name) { this.name = name; }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public List<String> getPhotoUrls() { return photoUrls; }
+    public void setPhotoUrls(List<String> photoUrls) { this.photoUrls = photoUrls; }
 
-    public List<String> getPhotoUrls() {
-        return photoUrls;
-    }
+    public List<Tag> getTags() { return tags; }
+    public void setTags(List<Tag> tags) { this.tags = tags; }
 
-    public void setPhotoUrls(List<String> photoUrls) {
-        this.photoUrls = photoUrls;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

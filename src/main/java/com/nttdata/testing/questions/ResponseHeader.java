@@ -4,9 +4,6 @@ import net.serenitybdd.rest.SerenityRest;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 
-/**
- * Question: lee el valor de una cabecera (header) HTTP de la ultima respuesta.
- */
 public class ResponseHeader implements Question<String> {
 
     private final String headerName;

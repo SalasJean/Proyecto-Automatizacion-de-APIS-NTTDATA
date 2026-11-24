@@ -10,22 +10,24 @@ import java.net.URL;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: POST /pet/{petId}/uploadImage
- * Sube una imagen (multipart/form-data).
- */
 public class PostPetImage implements Task {
 
     private final String petId;
     private final String fileName;
+    private final String additionalMetadata;
 
-    public PostPetImage(String petId, String fileName) {
+    public PostPetImage(String petId, String fileName, String additionalMetadata) {
         this.petId = petId;
         this.fileName = fileName;
+        this.additionalMetadata = additionalMetadata;
     }
 
     public static PostPetImage withFile(String petId, String fileName) {
-        return instrumented(PostPetImage.class, petId, fileName);
+        return instrumented(PostPetImage.class, petId, fileName, null);
+    }
+
+    public static PostPetImage withFileAndMetadata(String petId, String fileName, String additionalMetadata) {
+        return instrumented(PostPetImage.class, petId, fileName, additionalMetadata);
     }
 
     @Override
@@ -41,10 +43,16 @@ public class PostPetImage implements Task {
         File finalFile = file;
         actor.attemptsTo(
                 Post.to("/pet/{petId}/uploadImage")
-                        .with(request -> request
-                                .contentType(ContentType.MULTIPART)
-                                .pathParam("petId", petId)
-                                .multiPart("file", finalFile))
+                        .with(request -> {
+                            request.header("Accept", "application/json")
+                                   .contentType(ContentType.MULTIPART)
+                                   .pathParam("petId", petId)
+                                   .multiPart("file", finalFile);
+                            if (additionalMetadata != null) {
+                                request.formParam("additionalMetadata", additionalMetadata);
+                            }
+                            return request;
+                        })
         );
     }
 }

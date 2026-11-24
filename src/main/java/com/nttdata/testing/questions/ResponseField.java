@@ -4,10 +4,6 @@ import net.serenitybdd.rest.SerenityRest;
 import net.serenitybdd.screenplay.Actor;
 import net.serenitybdd.screenplay.Question;
 
-/**
- * Question: lee un campo del body JSON de la ultima respuesta usando una ruta JSON.
- * Ejemplos: "name", "status" (si el body es una lista, devuelve la lista de valores).
- */
 public class ResponseField implements Question<Object> {
 
     private final String fieldPath;

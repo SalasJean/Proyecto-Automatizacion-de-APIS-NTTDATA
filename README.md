@@ -1,125 +1,89 @@
 # petstore-api-test
 
-Proyecto de automatización de pruebas para servicios REST sobre la API pública de Swagger Petstore (`https://petstore.swagger.io/v2`), enfocado en el recurso `pet`. Desarrollado como práctica del proyecto integrador del curso **"Automatización de Servicios" de NTT DATA**, implementando el patrón **Screenplay** con **Java 17**, **Maven**, **Serenity BDD**, **Cucumber**, **Rest Assured** y **JUnit**.
-
----
-
-## Objetivo
-
-Automatizar y validar de manera confiable, mantenible y escalable las operaciones CRUD (creación, consulta por ID, consulta por estado, actualización con JSON, actualización con formulario x-www-form-urlencoded, eliminación y carga de imágenes multipart) sobre el recurso `pet` de la API Petstore, garantizando la cobertura de escenarios positivos (*happy path*) y negativos bajo estándares profesionales de aseguramiento de calidad (QA Automation).
+Proyecto de automatización de pruebas sobre la API REST de Swagger Petstore (`https://petstore.swagger.io/v2`), enfocado en el recurso `pet`. Desarrollado con **Java 17**, **Maven**, **Serenity BDD** bajo el patrón **Screenplay**, **Cucumber**, **Rest Assured** y **AssertJ**.
 
 ---
 
 ## Requisitos
 
-- **Java Development Kit (JDK)**: Versión 17 (LTS) o superior instalada y configurada en la variable de entorno `JAVA_HOME`.
-- **Apache Maven**: Versión 3.8.0 o superior configurada en el `PATH`.
-- **Conectividad a Internet**: Requerida tanto para la descarga inicial de dependencias como para interactuar con la API pública en vivo (`https://petstore.swagger.io/v2`).
+- **Java JDK**: 17 o superior.
+- **Apache Maven**: 3.9.9 -> de preferencia esta version
+- Conectarse a la api de swaggerui, petstore.
 
 ---
 
 ## Estructura del Proyecto
 
-El proyecto sigue una arquitectura limpia basada en **Screenplay Pattern**, manteniendo el código de producción en `src/main/java` y las pruebas y recursos en `src/test`:
-
 ```text
 petstore-api-test/
-├── pom.xml                                    # Gestión de dependencias y plugins de Maven (Surefire, Serenity)
-├── README.md                                  # Documentación técnica del proyecto
+├── pom.xml                                    # Dependencias y config de plugins
+├── README.md                                  # Guía del proyecto de como ejecutarlo
 └── src/
-    ├── main/
-    │   └── java/
-    │       └── com/nttdata/testing/
-    │           ├── models/
-    │           │   └── Pet.java               # Modelo POJO y fábrica para la construcción centralizada del body JSON
-    │           ├── questions/
-    │           │   ├── ResponseCode.java      # Question: obtiene el código de estado HTTP (statusCode)
-    │           │   ├── ResponseField.java     # Question: extrae valores o listas del body JSON mediante JsonPath
-    │           │   └── ResponseHeader.java    # Question: extrae cabeceras HTTP (ej. Content-Type)
-    │           └── tasks/
-    │               ├── DeletePet.java         # Task: DELETE /pet/{petId}
-    │               ├── GetPetById.java        # Task: GET /pet/{petId}
-    │               ├── GetPetsByStatus.java   # Task: GET /pet/findByStatus?status={status}
-    │               ├── PostPet.java           # Task: POST /pet (creación con body JSON)
-    │               ├── PostPetImage.java      # Task: POST /pet/{petId}/uploadImage (multipart/form-data)
-    │               ├── PostPetWithForm.java   # Task: POST /pet/{petId} (application/x-www-form-urlencoded)
-    │               └── PutPet.java            # Task: PUT /pet (actualización con body JSON)
+    ├── main/java/com/nttdata/testing/
+    │   ├── models/                            # Modelos de datos de la documentacion de swguer
+    │   ├── questions/                         # Lectura de respuestas ya sea del code del body y del header)
+    │   └── tasks/                             # Peticiones HTTP atómicas osea el CRUD(PostPet, GetPetById, PutPet, etc.)
     └── test/
-        ├── java/
-        │   └── com/nttdata/testing/
-        │       ├── RunnerTest.java            # Test Runner Cucumber + Serenity con JUnit 4
-        │       └── stepDefinitions/
-        │           ├── ParameterDefinition.java # Configuración del escenario (@Before) y tipo {actor}
-        │           └── PetStepDefinition.java   # Traductor de pasos Gherkin hacia Tasks y Questions
+        ├── java/com/nttdata/testing/
+        │   ├── RunnerTest.java                # Runner de Cucumber para levantar el test con Serenity
+        │   └── stepDefinitions/               # Mapeo de steps Gherkin y configuración(driver)
         └── resources/
-            ├── serenity.conf                  # Configuración centralizada de Serenity y URL base
-            ├── features/
-            │   └── APIPet.feature             # 8 escenarios de prueba documentados en Gherkin
-            └── files/
-                └── mascota.png                # Archivo de imagen de prueba para carga multipart
+            ├── serenity.conf                  # Configuración de la apy que es opcional y del la variable de entorno(enviroments)
+            ├── features/APIPet.feature        # Escenarios en Gherkin (CP01 al CP09)
+            └── files/manchitas.png            # Imagen para prueba para el metodo que acepta upload
 ```
 
 ---
 
 ## Cómo Ejecutar
 
-### Ejecución completa del ciclo de pruebas y generación de reportes
-Para compilar, ejecutar todos los escenarios y generar el reporte agregado de Serenity, ejecute:
+### 1. Ejecución rápida desde el IDE (RunnerTest)
+Para correr el proyecto sin usar comandos de terminal:
+1. Abre la clase `RunnerTest.java` (en `src/test/java/com/nttdata/testing/RunnerTest.java`).
+2. Dale clic al botón que esta al costado de la clase (o clic derecho ➔ **Run 'RunnerTest'**).
+3. En la consola y en la pestaña de JUnit de IntelliJ verás todos los tests ejecutados pasando en verde.
+
+### 2. Corrida completa y generación del reporte HTML
+Para compilar, ejecutar todos los escenarios y generar automáticamente el reporte consolidado de Serenity:
 
 ```bash
 mvn clean verify
 ```
 
-### Ejecución filtrada por tags de Cucumber
-Si desea ejecutar un subconjunto específico de escenarios:
+*(Tipsaso: Si ya ejecutaste los tests desde el `RunnerTest` y solo quieres generar o actualizar el reporte HTML sin volver a correr todas las pruebas, puedes ejecutar: `mvn serenity:aggregate`)*.
 
-- **Creación**:
-  ```bash
-  mvn test "-Dcucumber.filter.tags=@Crear"
-  ```
-- **Consulta (ID, estado y negativo)**:
-  ```bash
-  mvn test "-Dcucumber.filter.tags=@Consultar"
-  ```
-- **Actualización (JSON y formulario)**:
-  ```bash
-  mvn test "-Dcucumber.filter.tags=@Actualizar"
-  ```
-- **Eliminación**:
-  ```bash
-  mvn test "-Dcucumber.filter.tags=@Eliminar"
-  ```
-- **Avanzado (Subida de imagen)**:
-  ```bash
-  mvn test "-Dcucumber.filter.tags=@Avanzado"
-  ```
+### 3. Ejecutar el caso de defecto conocido (@DefectoConocido)
+El escenario **CP08** valida que la API responda `405` ante datos con formato inválido. Como el servidor de Petstore responde `500`, este caso está aislado para no romper la suite principal. Para correrlo de forma independiente y evidenciar el fallo:
+
+```bash
+mvn test "-Dcucumber.filter.tags=@DefectoConocido"
+```
+
+*(Resultado esperado de esta corrida: debe fallar se espera `expected: 405 but was: 500`).*
 
 ---
-
 ## Ubicación del Reporte de Serenity
 
-Una vez finalizada la ejecución de `mvn clean verify`, el reporte interactivo en HTML de Serenity BDD se genera automáticamente en la siguiente ruta exacta:
+Al terminar la ejecución de `mvn clean verify`, el reporte HTML se genera automáticamente en:
 
 ```text
 target/site/serenity/index.html
 ```
 
-Ruta absoluta en el sistema:
+Ruta absoluta:
 ```text
 C:\Users\SALAS\Documents\SpringToolSuite\java-projects\petstore-api-test\target\site\serenity\index.html
 ```
-
-Puede abrir este archivo en cualquier navegador web moderno para visualizar el estado de cada escenario, detalles de las peticiones HTTP enviadas, respuestas del servidor, tiempos de respuesta y evidencia paso a paso.
 
 ---
 
 ## Decisiones de Diseño
 
-1. **Adopción Estricta del Patrón Screenplay (Separación de Responsabilidades)**:
-   - *Por qué*: A diferencia del modelo tradicional basado en Page Object o controladores monolíticos, Screenplay centra las pruebas en el Actor y sus Habilidades (`CallAnApi`). Cada `Task` realiza **una única petición HTTP atómica** (un solo verbo y endpoint), mientras que las `Questions` se limitan exclusivamente a leer la respuesta sin generar efectos colaterales. Las aserciones y validaciones residen exclusivamente en los `StepDefinitions`. Esta separación reduce el acoplamiento, facilita el mantenimiento y genera una trazabilidad clara y legible para perfiles técnicos y de negocio en los reportes de Serenity.
+1. **Patrón Screenplay (Desacoplamiento de capas)**:
+   Las llamadas HTTP van exclusivamente en `tasks/` (una petición por clase, sin validaciones ni aserciones). Las `questions/` solo leen la respuesta recibida, y las verificaciones residen únicamente en los `stepDefinitions/` usando AssertJ. Esto mantiene el código ordenado, mantenible y fácil de reutilizar.
 
-2. **Centralización del Payload y Modelo de Dominio (`Pet.java`)**:
-   - *Por qué*: Para cumplir con el principio DRY (*Don't Repeat Yourself*), la estructura del JSON de una mascota se encapsuló en la clase `com.nttdata.testing.models.Pet`. Esto garantiza que peticiones tanto de creación (`PostPet`) como de actualización (`PutPet`) reutilicen el mismo formato de serialización. Además, asegura el cumplimiento del contrato Swagger OpenAPI v2 donde el arreglo `photoUrls` es requerido de forma obligatoria por la API para evitar errores `400 Bad Request`.
+2. **Independencia de escenarios con preparación reutilizable**:
+   El paso `el actor crea una mascota con id ... nombre ... y estado ...` se reutiliza tanto como acción principal (`When`) en la creación, como paso previo de preparación (`And`) en las pruebas de consulta, actualización y eliminación. Así, ningún escenario depende del orden ni del estado de pruebas anteriores.
 
-3. **Externalización y Fuente Única de Verdad para la Configuración (`serenity.conf`)**:
-   - *Por qué*: La URL base (`https://petstore.swagger.io/v2`) y las configuraciones de ejecución se gestionan en un único archivo HOCON (`serenity.conf`), eliminando cualquier cadena "quemada" (hardcodeada) en el código Java. En los step definitions se accede a este valor mediante `EnvironmentSpecificConfiguration`. Esto permite cambiar de entorno (por ejemplo desarrollo, pruebas o producción) pasando una variable de entorno o perfil de Maven sin modificar una sola línea de código fuente ni de los archivos `.feature`.
+3. **Manejo de defectos conocidos mediante Tags en el Runner**:
+   En lugar de alterar la aserción de CP08 para que espere 500 (lo cual escondería el bug del backend), mantuvimos la validación estricta del contrato (405) y aislamos el caso con `@DefectoConocido` en `RunnerTest.java`. Esto permite que la integración continua pase en verde sin dejar de documentar y automatizar el defecto real.

@@ -6,10 +6,6 @@ import net.serenitybdd.screenplay.rest.interactions.Get;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: GET /pet/{petId}
- * Consulta una mascota por su id.
- */
 public class GetPetById implements Task {
 
     private final String petId;
@@ -26,7 +22,9 @@ public class GetPetById implements Task {
     public <T extends Actor> void performAs(T actor) {
         actor.attemptsTo(
                 Get.resource("/pet/{petId}")
-                        .with(request -> request.pathParam("petId", petId))
+                        .with(request -> request
+                                .header("Accept", "application/json")
+                                .pathParam("petId", petId))
         );
     }
 }

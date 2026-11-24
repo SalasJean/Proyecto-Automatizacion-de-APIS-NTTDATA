@@ -22,21 +22,17 @@ import net.thucydides.model.util.EnvironmentVariables;
 
 import java.util.List;
 
-import static net.serenitybdd.screenplay.GivenWhenThen.seeThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasToString;
 
 /**
- * Traductor de las frases de APIPet.feature hacia las Tasks y Questions de Screenplay.
+ * Traductor este convierte codigo de negocio en codigo maquina para su automatizacion
  */
 public class PetStepDefinition {
 
     private EnvironmentVariables environmentVariables;
 
-    @Given("{actor} establece la url base de la tienda de mascotas")
-    public void elActorEstableceLaUrlBaseDeLaTiendaDeMascotas(Actor actor) {
+    @Given("{actor} establece el endpoint de pet")
+    public void elActorEstableceElEndpointDePet(Actor actor) {
         if (environmentVariables == null) {
             environmentVariables = SystemEnvironmentVariables.createEnvironmentVariables();
         }
@@ -45,15 +41,8 @@ public class PetStepDefinition {
         actor.whoCan(CallAnApi.at(baseUrl));
     }
 
-    @Given("existe una mascota registrada con id {string} y nombre {string}")
-    public void existeUnaMascotaRegistradaConIdYNombre(String id, String name) {
-        OnStage.theActorInTheSpotlight().attemptsTo(
-                PostPet.withParams(id, name, "available")
-        );
-    }
-
-    @When("{actor} envia una solicitud POST para crear la mascota con id {string} nombre {string} y estado {string}")
-    public void elActorEnviaUnaSolicitudPostParaCrearLaMascota(Actor actor, String id, String name, String status) {
+    @When("{actor} crea una mascota con id {string} nombre {string} y estado {string}")
+    public void elActorCreaUnaMascota(Actor actor, String id, String name, String status) {
         actor.attemptsTo(
                 PostPet.withParams(id, name, status)
         );
@@ -94,6 +83,13 @@ public class PetStepDefinition {
         );
     }
 
+    @When("{actor} actualiza la mascota con id {string} enviando photoUrls {string} en lugar de una lista")
+    public void elActorActualizaLaMascotaConPhotoUrlsInvalido(Actor actor, String id, String photoUrls) {
+        actor.attemptsTo(
+                PutPet.withInvalidPhotoUrls(id, "rocky", "available", photoUrls)
+        );
+    }
+
     @When("{actor} sube la imagen {string} a la mascota con id {string}")
     public void elActorSubeLaImagenALaMascota(Actor actor, String archivo, String id) {
         actor.attemptsTo(
@@ -101,29 +97,28 @@ public class PetStepDefinition {
         );
     }
 
-    @Then("el codigo de respuesta deberia ser {int}")
-    public void elCodigoDeRespuestaDeberiaSer(int expectedStatusCode) {
-        OnStage.theActorInTheSpotlight().should(
-                seeThat("el codigo de respuesta", ResponseCode.getStatus(), equalTo(expectedStatusCode))
-        );
+    @Then("el codigo de respuesta debe ser {int}")
+    public void elCodigoDeRespuestaDebeSer(int expectedStatusCode) {
+        assertThat(OnStage.theActorInTheSpotlight().asksFor(ResponseCode.getStatus()))
+                .isEqualTo(expectedStatusCode);
     }
 
-    @Then("el campo {string} de la respuesta deberia ser {string}")
-    public void elCampoDeLaRespuestaDeberiaSer(String field, String expectedValue) {
-        OnStage.theActorInTheSpotlight().should(
-                seeThat("el campo " + field, ResponseField.of(field), hasToString(expectedValue))
-        );
+    @Then("el campo {string} de la respuesta debe ser {string}")
+    public void elCampoDeLaRespuestaDebeSer(String field, String expectedValue) {
+        Object actualValue = OnStage.theActorInTheSpotlight().asksFor(ResponseField.of(field));
+        assertThat(String.valueOf(actualValue))
+                .isEqualTo(expectedValue);
     }
 
-    @Then("el header {string} de la respuesta deberia ser {string}")
-    public void elHeaderDeLaRespuestaDeberiaSer(String headerName, String expectedValue) {
-        OnStage.theActorInTheSpotlight().should(
-                seeThat("el header " + headerName, ResponseHeader.of(headerName), containsString(expectedValue))
-        );
+    @Then("el header {string} de la respuesta debe ser {string}")
+    public void elHeaderDeLaRespuestaDebeSer(String headerName, String expectedValue) {
+        String actualHeader = OnStage.theActorInTheSpotlight().asksFor(ResponseHeader.of(headerName));
+        assertThat(actualHeader)
+                .contains(expectedValue);
     }
 
-    @Then("todas las mascotas de la lista deberian tener el estado {string}")
-    public void todasLasMascotasDeLaListaDeberianTenerElEstado(String expectedStatus) {
+    @Then("todas las mascotas de la lista deben tener el estado {string}")
+    public void todasLasMascotasDeLaListaDebenTenerElEstado(String expectedStatus) {
         Object result = OnStage.theActorInTheSpotlight().asksFor(ResponseField.of("status"));
         assertThat(result)
                 .isInstanceOf(List.class);

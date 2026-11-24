@@ -7,10 +7,7 @@ import net.serenitybdd.screenplay.rest.interactions.Post;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: POST /pet/{petId}
- * Actualiza nombre y/o estado con datos de formulario (application/x-www-form-urlencoded, NO JSON).
- */
+//actualiza con formulario como muestra el contrato de la documentacion
 public class PostPetWithForm implements Task {
 
     private final String petId;
@@ -32,6 +29,7 @@ public class PostPetWithForm implements Task {
         actor.attemptsTo(
                 Post.to("/pet/{petId}")
                         .with(request -> request
+                                .header("Accept", "application/json")
                                 .contentType(ContentType.URLENC)
                                 .pathParam("petId", petId)
                                 .formParam("name", name)

@@ -8,11 +8,6 @@ import net.serenitybdd.screenplay.rest.interactions.Post;
 
 import static net.serenitybdd.screenplay.Tasks.instrumented;
 
-/**
- * Task: POST /pet
- * Crea una mascota nueva.
- * Body JSON: reutiliza el modelo Pet para garantizar que name y photoUrls esten presentes.
- */
 public class PostPet implements Task {
 
     private final String id;
@@ -35,6 +30,7 @@ public class PostPet implements Task {
         actor.attemptsTo(
                 Post.to("/pet")
                         .with(request -> request
+                                .header("Accept", "application/json")
                                 .contentType(ContentType.JSON)
                                 .body(pet))
         );
